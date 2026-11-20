@@ -28,11 +28,16 @@ export async function verifySession(token: string | undefined) {
   }
 }
 
-export function checkCredentials(email: string, password: string) {
-  const e = process.env.ADMIN_EMAIL ?? "";
-  const p = process.env.ADMIN_PASSWORD ?? "";
-  if (!e || !p) return false;
-  return safeEqual(email.trim().toLowerCase(), e.trim().toLowerCase()) && safeEqual(password, p);
+const clean = (v: string | undefined) => (v ?? "").trim().replace(/^["']|["']$/g, "").trim();
+
+/** "ok" | "bad" | "unset" (server env vars missing) */
+export function checkCredentials(email: string, password: string): "ok" | "bad" | "unset" {
+  const e = clean(process.env.ADMIN_EMAIL).toLowerCase();
+  const p = clean(process.env.ADMIN_PASSWORD);
+  if (!e || !p) return "unset";
+  const okEmail = safeEqual(email.trim().toLowerCase(), e);
+  const okPass = safeEqual(password.trim(), p);
+  return okEmail && okPass ? "ok" : "bad";
 }
 
 function safeEqual(a: string, b: string) {

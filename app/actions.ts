@@ -21,7 +21,9 @@ async function removeBlob(u: string | null) {
 
 // ---- auth ----
 export async function login(_: string | null, f: FormData) {
-  if (!checkCredentials(str(f, "email"), String(f.get("password") ?? ""))) return "Неверный email или пароль";
+  const r = checkCredentials(str(f, "email"), String(f.get("password") ?? ""));
+  if (r === "unset") return "На сервере не заданы ADMIN_EMAIL / ADMIN_PASSWORD (Vercel → Settings → Environment Variables), после добавления нужен Redeploy";
+  if (r === "bad") return "Неверный email или пароль";
   const { token, maxAge } = await createSession();
   (await cookies()).set(COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge, path: "/" });
   redirect("/");
