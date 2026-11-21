@@ -24,3 +24,8 @@ export function AskMark({ className = "", star = true }: { className?: string; s
     </span>
   );
 }
+
+/** Logo: "star" = the mark alone (header, inner pages, loading, favicon); "full" = star + ASK letters (intro, home hero). */
+export function Logo({ variant = "star", size = 22, className = "" }: { variant?: "star" | "full"; size?: number; className?: string }) {
+  return variant === "full" ? <AskMark className={className} /> : <Star size={size} className={`logo-star ${className}`} />;
+}

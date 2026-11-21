@@ -3,7 +3,7 @@ import { createProject } from "./actions";
 import TopBar from "@/components/TopBar";
 import ServerProblem from "@/components/ServerProblem";
 import ProjectIndex, { type Row } from "@/components/ProjectIndex";
-import { AskMark } from "@/components/Logo";
+import { Logo } from "@/components/Logo";
 import Intro from "@/components/Intro";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +38,7 @@ async function HomeInner() {
       <main className="wrap">
         <section className="hero">
           <div className="arc" aria-hidden><span className="arc-grain" /></div>
-          <h1><AskMark /></h1>
+          <h1><Logo variant="full" /></h1>
           <div className="hero-meta">
             <div><span className="label">Проекты</span><span>{String(projects.length).padStart(2, "0")}</span></div>
             <div><span className="label">Рефы</span><span>{String(total).padStart(2, "0")}</span></div>

@@ -467,3 +467,13 @@ input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 4px
 .shot-body input, .shot-body textarea, .drop input, .vcard textarea, .tile textarea { background: rgba(255,255,255,.045); }
 .shot-body input:focus, .shot-body textarea:focus { background: rgba(255,255,255,.07); }
 .shot-img { background: rgba(255,255,255,.035); margin: 8px; border-radius: var(--r-sm); overflow: hidden; }
+
+/* standalone star mark */
+.brand { padding: 4px 6px; margin-left: -6px; border-radius: 999px; transition: transform .3s var(--ease), filter .3s; }
+.brand .logo-star path { fill: #fff; transition: fill .3s; }
+.brand:hover { transform: rotate(-8deg) scale(1.08); filter: drop-shadow(0 0 10px rgba(42,141,255,.8)); }
+.brand:hover .logo-star path { fill: var(--accent-2); }
+.loading { min-height: 70vh; display: grid; place-items: center; }
+.loading .logo-star { animation: star-pulse 1.1s ease-in-out infinite; filter: drop-shadow(0 0 22px rgba(42,141,255,.7)); }
+.loading .logo-star path { fill: var(--accent-2); }
+@keyframes star-pulse { 0%, 100% { transform: scale(.88); opacity: .6; } 50% { transform: scale(1.06); opacity: 1; } }
