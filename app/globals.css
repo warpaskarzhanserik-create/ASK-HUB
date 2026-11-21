@@ -40,7 +40,6 @@ h2 { font-size: 22px; }
 .top { display: grid; grid-template-columns: auto 1fr auto; gap: 24px; align-items: center; height: 48px; padding: 0 24px;
   border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 20; background: rgba(0,0,0,.85); backdrop-filter: blur(10px); }
 .brand { font-weight: 700; letter-spacing: .04em; }
-.brand span { color: var(--accent); margin: 0 1px; }
 .crumbs { display: flex; gap: 10px; min-width: 0; color: var(--muted); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .crumbs strong { color: var(--text); font-weight: 400; overflow: hidden; text-overflow: ellipsis; }
 .top-meta { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
@@ -203,3 +202,65 @@ button:disabled { opacity: .4; cursor: default; }
   .shots { grid-template-columns: repeat(2, 1fr); }
   .shot { break-inside: avoid; }
 }
+
+/* =========================================================
+   ORB — sphere + spark star (logo motif) and intro animation
+   Swap these 5 variables for the original red/orange look:
+   --orb-hi:#fff1e6; --orb-mid:#ff8a5c; --orb-lo:#e0401f; --orb-deep:#5a0d05; --orb-ring:#ff6a3d;
+   ========================================================= */
+:root {
+  --orb-hi: #ddedfe;
+  --orb-mid: #308efd;
+  --orb-lo: #0666df;
+  --orb-deep: #012563;
+  --orb-ring: #8bc1fc;
+}
+.grain-bg { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+
+.orb { --s: 220px; position: relative; width: var(--s); height: var(--s); display: grid; place-items: center; }
+.orb > * { position: absolute; }
+.orb-ball { inset: 0; border-radius: 50%; overflow: hidden;
+  background: radial-gradient(circle at 32% 74%, var(--orb-hi) 0%, var(--orb-mid) 32%, var(--orb-lo) 62%, var(--orb-deep) 100%);
+  filter: blur(calc(var(--s) * .012)); box-shadow: 0 0 calc(var(--s) * .25) calc(var(--s) * .02) color-mix(in srgb, var(--orb-lo) 45%, transparent); }
+.orb-grain { inset: 0; position: absolute; mix-blend-mode: overlay; opacity: .55;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+.orb-halo { inset: -35%; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--orb-lo) 35%, transparent) 0%, transparent 62%); filter: blur(8px); }
+.orb-star { width: 14%; height: auto; aspect-ratio: 6 / 10; fill: #000; filter: blur(.4px); }
+.orb-idle .orb-ball { animation: orb-breathe 6s ease-in-out infinite; }
+.orb-idle .orb-halo { animation: orb-breathe 6s ease-in-out infinite reverse; }
+@keyframes orb-breathe { 0%, 100% { transform: scale(1); filter: blur(calc(var(--s) * .012)) brightness(1); } 50% { transform: scale(1.03); filter: blur(calc(var(--s) * .016)) brightness(1.12); } }
+
+/* rings: blurred light arcs spiralling in, with a hint of chromatic aberration */
+.orb-ring { inset: -8%; border-radius: 50%; opacity: 0;
+  background: conic-gradient(from 0deg, transparent 0 55%, color-mix(in srgb, var(--orb-ring) 40%, transparent) 70%, var(--orb-hi) 86%, transparent 92%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 9%), #000 calc(100% - 7%), #000 calc(100% - 2%), transparent 100%);
+          mask: radial-gradient(farthest-side, transparent calc(100% - 9%), #000 calc(100% - 7%), #000 calc(100% - 2%), transparent 100%);
+  filter: blur(6px) drop-shadow(3px 0 0 rgba(255,60,60,.35)) drop-shadow(-3px 0 0 rgba(60,160,255,.45)); }
+.orb-intro .orb-ring.r1 { animation: ring-in 1.9s .55s cubic-bezier(.2,.7,.2,1) forwards; }
+.orb-intro .orb-ring.r2 { animation: ring-in 1.9s .75s cubic-bezier(.2,.7,.2,1) forwards; --rot: 200deg; }
+.orb-intro .orb-ring.r3 { animation: ring-in 1.7s 1.0s cubic-bezier(.2,.7,.2,1) forwards; --rot: 110deg; }
+@keyframes ring-in {
+  0% { opacity: 0; transform: rotate(var(--rot, 0deg)) scale(2.3); }
+  20% { opacity: 1; }
+  70% { opacity: .8; }
+  100% { opacity: 0; transform: rotate(calc(var(--rot, 0deg) + 320deg)) scale(1.05); }
+}
+.orb-intro .orb-ball { animation: ball-in 1.2s ease-out both, ball-flash 1.4s 1.3s ease-in-out both; }
+.orb-intro .orb-halo { animation: fade-in 1.2s ease-out both; }
+.orb-intro .orb-star { animation: star-in .7s .55s cubic-bezier(.2,1.4,.4,1) both; }
+@keyframes ball-in { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
+@keyframes ball-flash { 0%, 100% { filter: blur(calc(var(--s) * .012)) brightness(1); } 50% { filter: blur(calc(var(--s) * .02)) brightness(1.35); } }
+@keyframes star-in { from { opacity: 0; transform: scale(0) rotate(-45deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.intro { position: fixed; inset: 0; z-index: 100; background: #000; display: grid; place-items: center; cursor: pointer; transition: opacity .45s ease; }
+.intro-out { opacity: 0; pointer-events: none; }
+.orb-xl { --s: min(46vmin, 360px); }
+.intro-skip { position: absolute; bottom: 28px; left: 0; right: 0; text-align: center; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .1em; animation: fade-in 1s 1s both; }
+
+/* hero orb */
+.hero-orb { position: absolute; right: 6%; top: 50%; transform: translateY(-50%); --s: clamp(180px, 30vw, 420px); pointer-events: none; }
+.hero-orb.orb { position: absolute; }
+.brand { display: inline-flex; align-items: center; gap: 8px; }
+@media (max-width: 760px) { .hero-orb { right: -18%; top: 34%; opacity: .8; } .bars { display: none; } }
+@media (prefers-reduced-motion: reduce) { .orb-idle .orb-ball, .orb-idle .orb-halo { animation: none; } }

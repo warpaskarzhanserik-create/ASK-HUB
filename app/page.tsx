@@ -3,6 +3,8 @@ import { createProject } from "./actions";
 import TopBar from "@/components/TopBar";
 import ServerProblem from "@/components/ServerProblem";
 import ProjectIndex, { type Row } from "@/components/ProjectIndex";
+import Orb from "@/components/Orb";
+import Intro from "@/components/Intro";
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +34,10 @@ async function HomeInner() {
   return (
     <>
       <TopBar><span>/ Index</span></TopBar>
+      <Intro />
       <main className="wrap">
         <section className="hero">
+          <Orb className="hero-orb" />
           <div className="row" style={{ justifyContent: "space-between" }}>
             <span className="label">Personal reference hub</span>
             <div className="bars" aria-hidden>
