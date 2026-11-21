@@ -1,13 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 import { AskMark } from "./Logo";
+import Orb from "./Orb";
 
 const KEY = "askhub-intro-seen";
 
 /**
- * ~3s intro, once per browser session, skippable (click / any key):
- * the ASK letters appear on black, light is born inside them and spreads
- * into the horizon gradient, then the site fades in underneath.
+ * ~4.5s intro, once per browser session, skippable (click / any key):
+ * 1) glowing grainy sphere, the star appears, light rings spiral around it (reference video);
+ * 2) the sphere melts into the star, ASK letters appear, light spreads from the star
+ *    into the horizon gradient, and the site fades in underneath.
  */
 export default function Intro() {
   const [state, setState] = useState<"hidden" | "play" | "out">("hidden");
@@ -18,8 +20,8 @@ export default function Intro() {
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (seen || reduce) return;
     setState("play");
-    const t1 = setTimeout(() => setState("out"), 2500);
-    const t2 = setTimeout(() => setState("hidden"), 3300);
+    const t1 = setTimeout(() => setState("out"), 4400);
+    const t2 = setTimeout(() => setState("hidden"), 5200);
     const skip = () => { setState("out"); setTimeout(() => setState("hidden"), 500); };
     window.addEventListener("keydown", skip, { once: true });
     return () => { clearTimeout(t1); clearTimeout(t2); window.removeEventListener("keydown", skip); };
@@ -29,6 +31,7 @@ export default function Intro() {
   const skip = () => { setState("out"); setTimeout(() => setState("hidden"), 500); };
   return (
     <div className={`intro ${state === "out" ? "intro-out" : ""}`} onClick={skip}>
+      <div className="intro-orb"><Orb rings idle={false} /></div>
       <div className="intro-light" aria-hidden><span className="arc-grain" /></div>
       <div className="intro-logo"><AskMark /></div>
       <div className="intro-motto">

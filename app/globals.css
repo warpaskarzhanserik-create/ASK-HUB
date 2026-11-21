@@ -477,3 +477,28 @@ input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 4px
 .loading .logo-star { animation: star-pulse 1.1s ease-in-out infinite; filter: drop-shadow(0 0 22px rgba(42,141,255,.7)); }
 .loading .logo-star path { fill: var(--accent-2); }
 @keyframes star-pulse { 0%, 100% { transform: scale(.88); opacity: .6; } 50% { transform: scale(1.06); opacity: 1; } }
+
+/* =========================================================
+   INTRO v4 — phase 1: sphere + star + spiral rings (0–2.3s), phase 2: letters + light (2.2s+)
+   ========================================================= */
+.intro { --fs: clamp(64px, 14vmin, 150px); }
+.intro-logo { font-size: var(--fs); animation-delay: 3.7s; }
+.intro-orb { position: absolute; left: 50%; top: calc(50% + var(--fs) * .148); transform: translate(-50%, -50%); z-index: 1;
+  animation: orb-melt .7s 2.05s cubic-bezier(.6,0,.4,1) forwards; }
+.intro-orb .orb { --s: min(42vmin, 340px); }
+@keyframes orb-melt { to { opacity: 0; transform: translate(-50%, -50%) scale(.2); filter: blur(10px); } }
+.intro-logo .am-star { animation-delay: 2.2s; }
+.intro-logo .am-s { animation-delay: 2.45s !important; }
+.intro-logo .am-a { animation-delay: 2.6s !important; }
+.intro-logo .am-k { animation-delay: 2.75s !important; }
+.intro-light { animation: light-grow 1.6s 2.75s cubic-bezier(.65,0,.25,1) both; }
+.intro-motto > :nth-child(1) { animation-delay: 2.9s; } .intro-motto > :nth-child(2) { animation-delay: 3s; }
+.intro-motto > :nth-child(3) { animation-delay: 3.1s; } .intro-motto > :nth-child(4) { animation-delay: 3.2s; }
+.intro-motto > :nth-child(5) { animation-delay: 3.3s; }
+@keyframes light-grow2 {
+  0%   { opacity: 0; --rr: 0%;   filter: blur(26px) brightness(1.8); }
+  12%  { opacity: 1; }
+  35%  { --rr: 18%;  filter: blur(20px) brightness(1.4); }
+  100% { opacity: 1; --rr: 140%; filter: blur(14px) brightness(1); }
+}
+.intro-light { animation-name: light-grow2; }
