@@ -3,7 +3,7 @@ import { createProject } from "./actions";
 import TopBar from "@/components/TopBar";
 import ServerProblem from "@/components/ServerProblem";
 import ProjectIndex, { type Row } from "@/components/ProjectIndex";
-import Orb from "@/components/Orb";
+import { AskMark } from "@/components/Logo";
 import Intro from "@/components/Intro";
 
 export const dynamic = "force-dynamic";
@@ -37,17 +37,12 @@ async function HomeInner() {
       <Intro />
       <main className="wrap">
         <section className="hero">
-          <Orb className="hero-orb" />
-          <div className="row" style={{ justifyContent: "space-between" }}>
-            <span className="label">Ambition · Strategy · Knowledge</span>
-            <div className="bars" aria-hidden>
-              {[30, 55, 40, 75, 60, 100, 85].map((h, i) => <i key={i} style={{ height: `${h}%`, opacity: 0.35 + i * 0.1 }} />)}
-            </div>
-          </div>
-          <h1>ASK<span className="accent">/</span>HUB</h1>
+          <div className="arc" aria-hidden><span className="arc-grain" /></div>
+          <h1><AskMark /></h1>
           <div className="hero-meta">
             <div><span className="label">Проекты</span><span>{String(projects.length).padStart(2, "0")}</span></div>
             <div><span className="label">Рефы</span><span>{String(total).padStart(2, "0")}</span></div>
+            <div><span className="label">ASK</span><span>Ambition · Strategy · Knowledge</span></div>
             <div><span className="label">Разделы</span><span>Мудборд · Видео · Заметки · Раскадровка</span></div>
           </div>
         </section>

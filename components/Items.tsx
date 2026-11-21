@@ -60,7 +60,7 @@ function Tile({ item, n, onOpen }: { item: Item; n: number; onOpen: () => void }
   const [editing, setEditing] = useState(false);
   const label = LABEL[item.source];
   return (
-    <div className="tile" style={{ opacity: pending ? 0.4 : 1 }}>
+    <div className="tile" style={{ opacity: pending ? 0.4 : 1, ["--i" as string]: Math.min(n, 12) }}>
       <div className="media" onClick={onOpen}>
         {item.kind === "image" ? (
           <img src={item.url} alt="" loading="lazy" />

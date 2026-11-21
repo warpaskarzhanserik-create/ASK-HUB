@@ -64,7 +64,7 @@ async function ProjectInner({ params, searchParams }: PageProps) {
             </Link>
           ))}
         </nav>
-        <div className="tab-body">
+        <div className="tab-body" key={tab}>
 
         {(tab === "mood" || tab === "video") && (
           <div className="stack">
