@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { db, type Project } from "@/lib/db";
 import { createProject } from "./actions";
 import TopBar from "@/components/TopBar";
 import ServerProblem from "@/components/ServerProblem";
+import ProjectIndex, { type Row } from "@/components/ProjectIndex";
 
 export const dynamic = "force-dynamic";
 
@@ -22,33 +22,44 @@ async function HomeInner() {
       (select count(*)::int from items i where i.project_id = p.id) n
     from projects p order by p.created_at desc`;
 
+  const total = projects.reduce((a, p) => a + p.n, 0);
+  const rows: Row[] = projects.map((p) => ({
+    id: p.id, name: p.name, description: p.description, n: p.n,
+    thumb: p.thumbs?.[0] || null,
+    created: new Date(p.created_at).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit" }),
+  }));
+
   return (
     <>
-      <TopBar />
-      <main className="wrap stack">
-        <form action={createProject} className="card pad row">
-          <input name="name" placeholder="Новый проект — название" required className="grow" style={{ flex: "2 1 200px" }} />
-          <input name="description" placeholder="Коротко о проекте (необязательно)" style={{ flex: "3 1 200px" }} />
-          <button className="primary">+ Проект</button>
+      <TopBar><span>/ Index</span></TopBar>
+      <main className="wrap">
+        <section className="hero">
+          <div className="row" style={{ justifyContent: "space-between" }}>
+            <span className="label">Personal reference hub</span>
+            <div className="bars" aria-hidden>
+              {[30, 55, 40, 75, 60, 100, 85].map((h, i) => <i key={i} style={{ height: `${h}%`, opacity: 0.35 + i * 0.1 }} />)}
+            </div>
+          </div>
+          <h1>ASK<span className="accent">/</span>HUB</h1>
+          <div className="hero-meta">
+            <div><span className="label">Проекты</span><span>{String(projects.length).padStart(2, "0")}</span></div>
+            <div><span className="label">Рефы</span><span>{String(total).padStart(2, "0")}</span></div>
+            <div><span className="label">Разделы</span><span>Мудборд · Видео · Заметки · Раскадровка</span></div>
+          </div>
+        </section>
+
+        <form action={createProject} className="create">
+          <span className="num">+{String(projects.length + 1).padStart(2, "0")}</span>
+          <input name="name" placeholder="Название нового проекта" required />
+          <input name="description" className="desc" placeholder="Коротко о проекте (необязательно)" />
+          <button className="primary">Создать</button>
         </form>
-        {projects.length === 0 && <p className="muted">Пока нет проектов. Создай первый выше.</p>}
-        <div className="projects">
-          {projects.map((p) => (
-            <Link key={p.id} href={`/p/${p.id}`} className="card project-card">
-              {p.thumbs && p.thumbs.length > 0 && (
-                <div className="project-cover">
-                  {p.thumbs.map((t, i) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img key={i} src={t} alt="" loading="lazy" />
-                  ))}
-                </div>
-              )}
-              <strong>{p.name}</strong>
-              {p.description && <span className="muted small">{p.description}</span>}
-              <span className="muted small">{p.n} рефов</span>
-            </Link>
-          ))}
-        </div>
+
+        {projects.length === 0 ? (
+          <p className="empty">Пока нет проектов. Создай первый выше.</p>
+        ) : (
+          <ProjectIndex rows={rows} />
+        )}
       </main>
     </>
   );

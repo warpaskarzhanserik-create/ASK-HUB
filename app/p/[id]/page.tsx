@@ -47,16 +47,24 @@ async function ProjectInner({ params, searchParams }: PageProps) {
   return (
     <>
       <TopBar>
-        <span className="muted">/</span>
-        <strong style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{project.name}</strong>
+        <Link href="/">/ Index</Link>
+        <span>/</span>
+        <strong>{project.name}</strong>
       </TopBar>
       <main className="wrap">
-        <h1 className="print-only">{project.name}</h1>
+        <section className="page-title">
+          <span className="label">Проект №{String(id).padStart(2, "0")} · {new Date(project.created_at).toLocaleDateString("ru-RU")}</span>
+          <h1>{project.name}</h1>
+          {project.description && <span className="muted" style={{ maxWidth: 720 }}>{project.description}</span>}
+        </section>
         <nav className="tabs">
-          {TABS.map(([k, label]) => (
-            <Link key={k} href={`/p/${id}?tab=${k}`} className={k === tab ? "on" : ""}>{label}</Link>
+          {TABS.map(([k, label], i) => (
+            <Link key={k} href={`/p/${id}?tab=${k}`} className={k === tab ? "on" : ""}>
+              <span>{String(i + 1).padStart(2, "0")}</span>{label}
+            </Link>
           ))}
         </nav>
+        <div className="tab-body">
 
         {(tab === "mood" || tab === "video") && (
           <div className="stack">
@@ -89,6 +97,7 @@ async function ProjectInner({ params, searchParams }: PageProps) {
             </form>
           </div>
         )}
+        </div>
       </main>
     </>
   );
@@ -100,20 +109,19 @@ async function NotesTab({ projectId, noteId }: { projectId: number; noteId: numb
   const current = notes.find((n) => n.id === noteId) ?? notes[0];
   return (
     <div className="notes">
-      <aside className="stack note-list" style={{ alignContent: "start" }}>
+      <aside className="note-list">
         <form action={createNote.bind(null, projectId)}>
           <button className="primary" style={{ width: "100%" }}>+ Заметка</button>
         </form>
-        <div>
-          {notes.map((n) => (
-            <Link key={n.id} href={`/p/${projectId}?tab=notes&note=${n.id}`} className={n.id === current?.id ? "on" : ""}>
-              <div>{n.title}</div>
-              <div className="muted small">{new Date(n.updated_at).toLocaleDateString("ru-RU")}</div>
-            </Link>
-          ))}
-        </div>
+        {notes.map((n, i) => (
+          <Link key={n.id} href={`/p/${projectId}?tab=notes&note=${n.id}`} className={n.id === current?.id ? "on" : ""}>
+            <span className="n">{String(i + 1).padStart(2, "0")}</span>
+            <span>{n.title}</span>
+            <span className="muted small">{new Date(n.updated_at).toLocaleDateString("ru-RU")}</span>
+          </Link>
+        ))}
       </aside>
-      <section>{current ? <NoteEditor key={current.id} note={current} /> : <p className="muted">Заметок пока нет.</p>}</section>
+      <section className="note-main">{current ? <NoteEditor key={current.id} note={current} /> : <p className="muted">Заметок пока нет.</p>}</section>
     </div>
   );
 }

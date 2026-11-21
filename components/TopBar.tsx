@@ -3,10 +3,9 @@ import Link from "next/link";
 export default function TopBar({ children }: { children?: React.ReactNode }) {
   return (
     <header className="top">
-      <div className="row grow">
-        <Link href="/" className="brand">ASK <span>HUB</span></Link>
-        {children}
-      </div>
+      <Link href="/" className="brand">ASK<span>/</span>HUB</Link>
+      <div className="crumbs">{children}</div>
+      <span className="top-meta">Moodboard · Refs · Storyboard</span>
     </header>
   );
 }

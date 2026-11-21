@@ -45,13 +45,13 @@ function ShotCard({ shot, n, last }: { shot: Shot; n: number; last: boolean }) {
         onDrop={(e) => { e.preventDefault(); onFile(e.dataTransfer.files[0]); }}
         title="Нажми или перетащи картинку"
       >
-        {shot.image_url ? <img src={shot.image_url} alt="" /> : <span className="small">{uploading ? "Загрузка…" : "+ кадр (картинка)"}</span>}
+        <span className="big-n">{String(n).padStart(2, "0")}</span>
+        {shot.image_url ? <img src={shot.image_url} alt="" /> : <span className="small">{uploading ? "Загрузка…" : "+ картинка кадра"}</span>}
         {uploading && shot.image_url && <span className="badge">Загрузка…</span>}
         <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => onFile(e.target.files?.[0])} />
       </div>
       <div className="shot-body">
         <div className="row">
-          <span className="shot-num">#{n}</span>
           <div className="grow">{field("scene", "Сцена / локация")}</div>
           <div className="row shot-acts" style={{ gap: 2 }}>
             <button className="icon ghost" disabled={n === 1} onClick={() => start(() => moveShot(shot.id, pid, -1))} title="Раньше">←</button>
@@ -76,13 +76,13 @@ export default function Storyboard({ shots, projectId }: { shots: Shot[]; projec
   const [pending, start] = useTransition();
   const total = shots.reduce((s, x) => s + (parseFloat(x.duration.replace(",", ".")) || 0), 0);
   return (
-    <div className="stack">
-      <div className="row no-print">
+    <div>
+      <div className="board-bar no-print">
         <button className="primary" disabled={pending} onClick={() => start(() => addShot(projectId))}>+ Кадр</button>
         <button onClick={() => window.print()}>Печать / PDF</button>
         <span className="muted small grow">{shots.length} кадров{total ? ` · ~${Math.round(total)} сек` : ""}</span>
       </div>
-      {shots.length === 0 && <p className="muted">Раскадровка пустая. Добавь первый кадр.</p>}
+      {shots.length === 0 && <p className="empty">Раскадровка пустая. Добавь первый кадр.</p>}
       <div className="shots">
         {shots.map((s, i) => <ShotCard key={s.id} shot={s} n={i + 1} last={i === shots.length - 1} />)}
       </div>

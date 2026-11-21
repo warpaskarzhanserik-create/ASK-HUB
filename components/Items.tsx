@@ -55,35 +55,34 @@ function NoteEdit({ item }: { item: Item }) {
   );
 }
 
-function Tile({ item, onOpen }: { item: Item; onOpen: () => void }) {
+function Tile({ item, n, onOpen }: { item: Item; n: number; onOpen: () => void }) {
   const [pending, start] = useTransition();
   const [editing, setEditing] = useState(false);
   const label = LABEL[item.source];
   return (
     <div className="tile" style={{ opacity: pending ? 0.4 : 1 }}>
-      {item.kind === "image" ? (
-        <img src={item.url} alt="" loading="lazy" onClick={onOpen} />
-      ) : item.source === "upload" ? (
-        <video src={`${item.url}#t=0.1`} muted playsInline preload="metadata" onClick={onOpen} onMouseEnter={(e) => e.currentTarget.play().catch(() => {})} onMouseLeave={(e) => e.currentTarget.pause()} />
-      ) : item.thumb_url ? (
-        <div style={{ position: "relative" }} onClick={onOpen}>
+      <div className="media" onClick={onOpen}>
+        {item.kind === "image" ? (
+          <img src={item.url} alt="" loading="lazy" />
+        ) : item.source === "upload" ? (
+          <video src={`${item.url}#t=0.1`} muted playsInline preload="metadata" onMouseEnter={(e) => e.currentTarget.play().catch(() => {})} onMouseLeave={(e) => e.currentTarget.pause()} />
+        ) : item.thumb_url ? (
           <img src={item.thumb_url} alt="" loading="lazy" referrerPolicy="no-referrer" />
-          {item.kind === "video" && <div className="play">▶</div>}
-        </div>
-      ) : (
-        <div className="ph" onClick={onOpen}>{item.kind === "video" ? "▶ " : ""}{item.title || item.url}</div>
-      )}
-      {label && <span className="badge">{label}</span>}
+        ) : (
+          <div className="ph">{item.title || item.url}</div>
+        )}
+        {item.kind === "video" && item.source !== "upload" && <div className="play" />}
+        {label && <span className="badge">{label}</span>}
+      </div>
       <div className="acts">
         <button onClick={() => setEditing((e) => !e)} title="Заметка">✎</button>
         <button onClick={() => confirm("Удалить реф?") && start(() => deleteItem(item.id, item.project_id))} title="Удалить">✕</button>
       </div>
-      {(item.title || item.note || editing) && (
-        <div className="meta">
-          {item.title && <span>{item.title}</span>}
-          {editing ? <NoteEdit item={item} /> : item.note && <span className="muted" style={{ whiteSpace: "pre-wrap" }}>{item.note}</span>}
-        </div>
-      )}
+      <div className="meta">
+        <div className="idx"><span>{String(n).padStart(2, "0")}</span><span>{item.kind === "image" ? "IMG" : item.kind === "video" ? "VID" : "URL"}</span></div>
+        {item.title && <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</span>}
+        {editing ? <NoteEdit item={item} /> : item.note && <span className="muted" style={{ whiteSpace: "pre-wrap" }}>{item.note}</span>}
+      </div>
     </div>
   );
 }
@@ -92,7 +91,7 @@ function VideoCard({ item }: { item: Item }) {
   const [pending, start] = useTransition();
   const [play, setPlay] = useState(item.source === "instagram" || item.source === "upload");
   return (
-    <div className="card" style={{ overflow: "hidden", opacity: pending ? 0.4 : 1 }}>
+    <div className="vcard" style={{ opacity: pending ? 0.4 : 1 }}>
       {play ? (
         <Player item={item} />
       ) : (
@@ -103,7 +102,7 @@ function VideoCard({ item }: { item: Item }) {
       )}
       <div className="pad stack" style={{ gap: 8 }}>
         <div className="row">
-          <span className="badge" style={{ position: "static" }}>{LABEL[item.source] || "Видео"}</span>
+          <span className="tag">{LABEL[item.source] || "Видео"}</span>
           <span className="grow" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title || item.url}</span>
           <a className="btn icon small" href={item.url} target="_blank" rel="noreferrer" title="Открыть">↗</a>
           <button className="icon small danger" onClick={() => confirm("Удалить видео?") && start(() => deleteItem(item.id, item.project_id))}>✕</button>
@@ -116,12 +115,12 @@ function VideoCard({ item }: { item: Item }) {
 
 export default function Items({ items, layout }: { items: Item[]; layout: "mood" | "video" }) {
   const [open, setOpen] = useState<Item | null>(null);
-  if (!items.length) return <p className="muted">Пока пусто.</p>;
+  if (!items.length) return <p className="empty">Пока пусто. Добавь первый реф выше.</p>;
   if (layout === "video")
     return <div className="video-grid">{items.map((i) => <VideoCard key={i.id} item={i} />)}</div>;
   return (
     <>
-      <div className="masonry">{items.map((i) => <Tile key={i.id} item={i} onOpen={() => setOpen(i)} />)}</div>
+      <div className="grid">{items.map((i, k) => <Tile key={i.id} item={i} n={items.length - k} onOpen={() => setOpen(i)} />)}</div>
       {open && <Viewer item={open} onClose={() => setOpen(null)} />}
     </>
   );
