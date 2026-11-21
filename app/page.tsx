@@ -39,7 +39,7 @@ async function HomeInner() {
         <section className="hero">
           <Orb className="hero-orb" />
           <div className="row" style={{ justifyContent: "space-between" }}>
-            <span className="label">Personal reference hub</span>
+            <span className="label">Ambition · Strategy · Knowledge</span>
             <div className="bars" aria-hidden>
               {[30, 55, 40, 75, 60, 100, 85].map((h, i) => <i key={i} style={{ height: `${h}%`, opacity: 0.35 + i * 0.1 }} />)}
             </div>

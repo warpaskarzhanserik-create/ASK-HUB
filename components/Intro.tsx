@@ -25,6 +25,9 @@ export default function Intro() {
   return (
     <div className={`intro ${state === "out" ? "intro-out" : ""}`} onClick={() => { setState("out"); setTimeout(() => setState("hidden"), 450); }}>
       <Orb rings idle={false} className="orb-xl" />
+      <div className="intro-motto">
+        <span>Ambition</span><i>·</i><span>Strategy</span><i>·</i><span>Knowledge</span>
+      </div>
       <span className="intro-skip">Нажми, чтобы пропустить</span>
     </div>
   );
