@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { del } from "@vercel/blob";
 import { db } from "@/lib/db";
-import { COOKIE, checkCredentials, createSession, verifySession } from "@/lib/auth";
+import { COOKIE, checkCredentials, createSession, hasSecret, verifySession } from "@/lib/auth";
 import { preview } from "@/lib/preview";
 
 async function guard() {
@@ -21,11 +21,16 @@ async function removeBlob(u: string | null) {
 
 // ---- auth ----
 export async function login(_: string | null, f: FormData) {
-  const r = checkCredentials(str(f, "email"), String(f.get("password") ?? ""));
-  if (r === "unset") return "На сервере не заданы ADMIN_EMAIL / ADMIN_PASSWORD (Vercel → Settings → Environment Variables), после добавления нужен Redeploy";
-  if (r === "bad") return "Неверный email или пароль";
-  const { token, maxAge } = await createSession();
-  (await cookies()).set(COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge, path: "/" });
+  try {
+    const r = checkCredentials(str(f, "email"), String(f.get("password") ?? ""));
+    if (r === "unset") return "На сервере не заданы ADMIN_EMAIL / ADMIN_PASSWORD (Vercel → Settings → Environment Variables), после добавления нужен Redeploy";
+    if (r === "bad") return "Неверный email или пароль";
+    if (!hasSecret()) return "На сервере не задан AUTH_SECRET (Vercel → Settings → Environment Variables), после добавления нужен Redeploy";
+    const { token, maxAge } = await createSession();
+    (await cookies()).set(COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge, path: "/" });
+  } catch (e) {
+    return `Ошибка сервера при входе: ${(e as Error).message}`;
+  }
   redirect("/");
 }
 

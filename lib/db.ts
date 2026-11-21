@@ -5,10 +5,20 @@ declare global {
   var __schemaReady: Promise<void> | undefined;
 }
 
+function databaseUrl() {
+  const env = process.env;
+  const direct = env.DATABASE_URL || env.POSTGRES_URL || env.DATABASE_URL_UNPOOLED || env.POSTGRES_URL_NON_POOLING;
+  if (direct) return direct;
+  // Vercel integrations may add a custom prefix, e.g. STORAGE_DATABASE_URL
+  const key = Object.keys(env).find((k) => /(_DATABASE_URL|_POSTGRES_URL)$/.test(k) && env[k]);
+  return key ? env[key]! : null;
+}
+
 function client() {
-  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not set");
+  const url = databaseUrl();
+  if (!url) throw new Error("База не подключена: на сервере нет DATABASE_URL (Vercel → Storage → Neon → Connect Project, потом Redeploy)");
   if (!global.__sql) {
-    global.__sql = postgres(process.env.DATABASE_URL, { ssl: process.env.DATABASE_URL.includes("localhost") ? false : "require", max: 5 });
+    global.__sql = postgres(url, { ssl: /localhost|127\.0\.0\.1/.test(url) ? false : "require", max: 5 });
   }
   return global.__sql;
 }

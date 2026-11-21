@@ -2,10 +2,19 @@ import Link from "next/link";
 import { db, type Project } from "@/lib/db";
 import { createProject } from "./actions";
 import TopBar from "@/components/TopBar";
+import ServerProblem from "@/components/ServerProblem";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  try {
+    return await HomeInner();
+  } catch (e) {
+    return <ServerProblem error={e} />;
+  }
+}
+
+async function HomeInner() {
   const sql = await db();
   const projects = await sql<(Project & { thumbs: string[] | null; n: number })[]>`
     select p.*,

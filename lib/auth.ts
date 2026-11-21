@@ -3,9 +3,13 @@ import { SignJWT, jwtVerify } from "jose";
 export const COOKIE = "session";
 const MAX_AGE = 60 * 60 * 24 * 60; // 60 days
 
+export function hasSecret() {
+  return !!(process.env.AUTH_SECRET ?? "").trim();
+}
+
 function secret() {
-  const s = process.env.AUTH_SECRET;
-  if (!s || s.length < 16) throw new Error("AUTH_SECRET must be set (16+ chars)");
+  const s = (process.env.AUTH_SECRET ?? "").trim();
+  if (!s) throw new Error("AUTH_SECRET is not set");
   return new TextEncoder().encode(s);
 }
 
@@ -19,7 +23,7 @@ export async function createSession() {
 }
 
 export async function verifySession(token: string | undefined) {
-  if (!token) return false;
+  if (!token || !hasSecret()) return false;
   try {
     await jwtVerify(token, secret());
     return true;

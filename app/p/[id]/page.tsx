@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { db, type Item, type Note, type Project, type Shot } from "@/lib/db";
 import { createNote, deleteProject, updateProject } from "@/app/actions";
 import TopBar from "@/components/TopBar";
+import ServerProblem from "@/components/ServerProblem";
 import AddRefs from "@/components/AddRefs";
 import Items from "@/components/Items";
 import NoteEditor from "@/components/NoteEditor";
@@ -18,10 +19,21 @@ const TABS = [
   ["settings", "Настройки"],
 ] as const;
 
-export default async function ProjectPage({ params, searchParams }: {
+type PageProps = {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ tab?: string; note?: string }>;
-}) {
+};
+
+export default async function ProjectPage(props: PageProps) {
+  try {
+    return await ProjectInner(props);
+  } catch (e) {
+    if (e && typeof e === "object" && "digest" in e && String((e as { digest: unknown }).digest).startsWith("NEXT_")) throw e;
+    return <ServerProblem error={e} />;
+  }
+}
+
+async function ProjectInner({ params, searchParams }: PageProps) {
   const { id: rawId } = await params;
   const { tab: rawTab, note: noteParam } = await searchParams;
   const id = Number(rawId);
