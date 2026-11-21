@@ -8,7 +8,8 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
         <code style={{ whiteSpace: "pre-wrap" }}>{error.message || "Неизвестная ошибка"}{error.digest ? `\nкод: ${error.digest}` : ""}</code>
         <div className="row">
           <button className="primary" onClick={() => reset()}>Попробовать снова</button>
-          <a className="btn" href="/login">На страницу входа</a>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a className="btn" href="/">На главную</a>
         </div>
       </div>
     </main>

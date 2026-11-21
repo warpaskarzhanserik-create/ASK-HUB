@@ -1,17 +1,10 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { del } from "@vercel/blob";
 import { db } from "@/lib/db";
-import { COOKIE, checkCredentials, createSession, hasSecret, verifySession } from "@/lib/auth";
 import { preview } from "@/lib/preview";
-
-async function guard() {
-  const jar = await cookies();
-  if (!(await verifySession(jar.get(COOKIE)?.value))) redirect("/login");
-}
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const isBlob = (u: string | null) => !!u && u.includes(".blob.vercel-storage.com");
@@ -19,24 +12,8 @@ async function removeBlob(u: string | null) {
   if (isBlob(u)) await del(u!).catch(() => {});
 }
 
-// ---- auth ----
-export async function login(_: string | null, f: FormData) {
-  try {
-    const r = checkCredentials(str(f, "email"), String(f.get("password") ?? ""));
-    if (r === "unset") return "На сервере не заданы ADMIN_EMAIL / ADMIN_PASSWORD (Vercel → Settings → Environment Variables), после добавления нужен Redeploy";
-    if (r === "bad") return "Неверный email или пароль";
-    if (!hasSecret()) return "На сервере не задан AUTH_SECRET (Vercel → Settings → Environment Variables), после добавления нужен Redeploy";
-    const { token, maxAge } = await createSession();
-    (await cookies()).set(COOKIE, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", maxAge, path: "/" });
-  } catch (e) {
-    return `Ошибка сервера при входе: ${(e as Error).message}`;
-  }
-  redirect("/");
-}
-
 // ---- projects ----
 export async function createProject(f: FormData) {
-  await guard();
   const name = str(f, "name");
   if (!name) return;
   const sql = await db();
@@ -45,14 +22,12 @@ export async function createProject(f: FormData) {
 }
 
 export async function updateProject(id: number, f: FormData) {
-  await guard();
   const sql = await db();
   await sql`update projects set name = ${str(f, "name") || "Без названия"}, description = ${str(f, "description")} where id = ${id}`;
   revalidatePath(`/p/${id}`);
 }
 
 export async function deleteProject(id: number) {
-  await guard();
   const sql = await db();
   const items = await sql`select url from items where project_id = ${id} and source = 'upload'`;
   const shots = await sql`select image_url from shots where project_id = ${id}`;
@@ -63,7 +38,6 @@ export async function deleteProject(id: number) {
 
 // ---- moodboard / video items ----
 export async function addLink(projectId: number, section: string, rawUrl: string) {
-  await guard();
   let p;
   try {
     p = await preview(rawUrl);
@@ -78,7 +52,6 @@ export async function addLink(projectId: number, section: string, rawUrl: string
 }
 
 export async function addUpload(projectId: number, section: string, url: string, contentType: string, name: string) {
-  await guard();
   const kind = contentType.startsWith("video/") ? "video" : "image";
   const sql = await db();
   await sql`insert into items (project_id, section, kind, source, url, embed_url, thumb_url, title)
@@ -87,14 +60,12 @@ export async function addUpload(projectId: number, section: string, url: string,
 }
 
 export async function updateItemNote(id: number, projectId: number, note: string) {
-  await guard();
   const sql = await db();
   await sql`update items set note = ${note} where id = ${id}`;
   revalidatePath(`/p/${projectId}`);
 }
 
 export async function deleteItem(id: number, projectId: number) {
-  await guard();
   const sql = await db();
   const [it] = await sql`delete from items where id = ${id} returning url, source`;
   if (it?.source === "upload") await removeBlob(it.url);
@@ -103,21 +74,18 @@ export async function deleteItem(id: number, projectId: number) {
 
 // ---- notes ----
 export async function createNote(projectId: number) {
-  await guard();
   const sql = await db();
   const [n] = await sql`insert into notes (project_id) values (${projectId}) returning id`;
   redirect(`/p/${projectId}?tab=notes&note=${n.id}`);
 }
 
 export async function saveNote(id: number, projectId: number, title: string, body: string) {
-  await guard();
   const sql = await db();
   await sql`update notes set title = ${title || "Без названия"}, body = ${body}, updated_at = now() where id = ${id}`;
   revalidatePath(`/p/${projectId}`);
 }
 
 export async function deleteNote(id: number, projectId: number) {
-  await guard();
   const sql = await db();
   await sql`delete from notes where id = ${id}`;
   redirect(`/p/${projectId}?tab=notes`);
@@ -125,7 +93,6 @@ export async function deleteNote(id: number, projectId: number) {
 
 // ---- storyboard shots ----
 export async function addShot(projectId: number) {
-  await guard();
   const sql = await db();
   await sql`insert into shots (project_id, position)
     values (${projectId}, (select coalesce(max(position), 0) + 1 from shots where project_id = ${projectId}))`;
@@ -134,7 +101,6 @@ export async function addShot(projectId: number) {
 
 const SHOT_FIELDS = ["scene", "shot_size", "description", "camera", "sound", "duration"] as const;
 export async function saveShot(id: number, projectId: number, data: Partial<Record<(typeof SHOT_FIELDS)[number], string>>) {
-  await guard();
   const clean: Record<string, string> = {};
   for (const k of SHOT_FIELDS) if (typeof data[k] === "string") clean[k] = data[k]!;
   if (!Object.keys(clean).length) return;
@@ -144,7 +110,6 @@ export async function saveShot(id: number, projectId: number, data: Partial<Reco
 }
 
 export async function setShotImage(id: number, projectId: number, url: string | null) {
-  await guard();
   const sql = await db();
   const [old] = await sql`select image_url from shots where id = ${id}`;
   await sql`update shots set image_url = ${url} where id = ${id}`;
@@ -153,7 +118,6 @@ export async function setShotImage(id: number, projectId: number, url: string | 
 }
 
 export async function moveShot(id: number, projectId: number, dir: -1 | 1) {
-  await guard();
   const sql = await db();
   const rows = await sql`select id from shots where project_id = ${projectId} order by position, id`;
   const ids = rows.map((r) => r.id as number);
@@ -168,7 +132,6 @@ export async function moveShot(id: number, projectId: number, dir: -1 | 1) {
 }
 
 export async function deleteShot(id: number, projectId: number) {
-  await guard();
   const sql = await db();
   const [s] = await sql`delete from shots where id = ${id} returning image_url`;
   await removeBlob(s?.image_url ?? null);

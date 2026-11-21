@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@vercel/blob": "^2.9.0",
-    "jose": "^6.2.18",
     "marked": "^18.2.1",
     "next": "15.5.29",
     "postgres": "^4.1.1",

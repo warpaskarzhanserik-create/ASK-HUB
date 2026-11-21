@@ -7,9 +7,6 @@ export default function TopBar({ children }: { children?: React.ReactNode }) {
         <Link href="/" className="brand">ASK <span>HUB</span></Link>
         {children}
       </div>
-      <form action="/api/logout" method="post">
-        <button className="ghost small muted">Выйти</button>
-      </form>
     </header>
   );
 }

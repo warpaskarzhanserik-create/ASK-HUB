@@ -9,14 +9,14 @@
 - **Заметки** — Markdown, автосохранение, картинки вставляются из буфера.
 - **Раскадровка** — карточки кадров: картинка, сцена, крупность, длительность, действие, камера, звук. Порядок меняется стрелками, есть печать/PDF.
 
+Вход без пароля: сайт открыт всем, у кого есть ссылка.
+
 ## Переменные окружения
 См. `.env.example`:
 
 | Переменная | Что это |
 |---|---|
 | `DATABASE_URL` | строка подключения Postgres (Neon) |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | твой логин и пароль для входа |
-| `AUTH_SECRET` | случайная строка 32+ символов (`openssl rand -base64 32`) |
 | `BLOB_READ_WRITE_TOKEN` | токен Vercel Blob (на Vercel добавляется сам при подключении Blob) |
 
 Таблицы в базе создаются автоматически при первом запросе.
@@ -34,5 +34,4 @@ npm run dev                  # http://localhost:3000
 1. Импортировать репозиторий на vercel.com → New Project.
 2. Storage → Create → **Neon (Postgres)** → подключить к проекту (добавит `DATABASE_URL`).
 3. Storage → Create → **Blob** → подключить к проекту (добавит `BLOB_READ_WRITE_TOKEN`).
-4. Settings → Environment Variables: `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `AUTH_SECRET`.
-5. Redeploy. Дальше каждый push в `main` деплоится сам.
+4. Redeploy. Дальше каждый push в `main` деплоится сам.
