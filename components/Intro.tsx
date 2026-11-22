@@ -8,7 +8,7 @@ const KEY = "askhub-intro-seen";
 /**
  * ~4.5s intro, once per browser session, skippable (click / any key):
  * 1) glowing grainy sphere, the star appears, light rings spiral around it (reference video);
- * 2) the sphere melts into the star, ASK letters appear, light spreads from the star
+ * 2) the sphere and star fade out, then ASK letters appear (never together with the star), light spreads from the star
  *    into the horizon gradient, and the site fades in underneath.
  */
 export default function Intro() {
@@ -33,7 +33,7 @@ export default function Intro() {
     <div className={`intro ${state === "out" ? "intro-out" : ""}`} onClick={skip}>
       <div className="intro-orb"><Orb rings idle={false} /></div>
       <div className="intro-light" aria-hidden><span className="arc-grain" /></div>
-      <div className="intro-logo"><AskMark /></div>
+      <div className="intro-logo"><AskMark star={false} /></div>
       <div className="intro-motto">
         <span>Ambition</span><i>·</i><span>Strategy</span><i>·</i><span>Knowledge</span>
       </div>

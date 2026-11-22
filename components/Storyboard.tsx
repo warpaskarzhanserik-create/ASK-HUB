@@ -1,8 +1,9 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 import { useRef, useState, useTransition } from "react";
-import type { Shot } from "@/lib/db";
-import { addShot, deleteShot, moveShot, saveShot, setShotImage } from "@/app/actions";
+import type { Shot, Source } from "@/lib/db";
+import { addShot, deleteShot, deleteSource, moveShot, saveShot, setShotImage } from "@/app/actions";
+import FrameGrabber, { tc } from "./FrameGrabber";
 import { uploadFile } from "@/lib/upload-client";
 
 type Field = "scene" | "shot_size" | "description" | "camera" | "sound" | "duration";
@@ -48,6 +49,7 @@ function ShotCard({ shot, n, last }: { shot: Shot; n: number; last: boolean }) {
         <span className="big-n">{String(n).padStart(2, "0")}</span>
         {shot.image_url ? <img src={shot.image_url} alt="" /> : <span className="small">{uploading ? "Загрузка…" : "+ картинка кадра"}</span>}
         {uploading && shot.image_url && <span className="badge">Загрузка…</span>}
+        {shot.timecode != null && !uploading && <span className="badge tc">{tc(shot.timecode)}</span>}
         <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => onFile(e.target.files?.[0])} />
       </div>
       <div className="shot-body">
@@ -72,17 +74,37 @@ function ShotCard({ shot, n, last }: { shot: Shot; n: number; last: boolean }) {
   );
 }
 
-export default function Storyboard({ shots, projectId }: { shots: Shot[]; projectId: number }) {
+const PLATFORM: Record<string, string> = { file: "Файл", vimeo: "Vimeo", youtube: "YouTube", instagram: "Instagram", url: "Ссылка" };
+
+export default function Storyboard({ shots, sources, projectId }: { shots: Shot[]; sources: Source[]; projectId: number }) {
   const [pending, start] = useTransition();
+  const perSource = (id: number) => shots.filter((s) => s.source_id === id).length;
   const total = shots.reduce((s, x) => s + (parseFloat(x.duration.replace(",", ".")) || 0), 0);
   return (
-    <div>
+    <div className="stack">
+      <FrameGrabber projectId={projectId} />
+      {sources.length > 0 && (
+        <div className="sources no-print">
+          {sources.map((src) => (
+            <span key={src.id} className="source">
+              <span className="tag">{PLATFORM[src.platform] ?? src.platform}</span>
+              {/^https?:/.test(src.url) ? <a href={src.url} target="_blank" rel="noreferrer">{src.title || src.url}</a> : <span>{src.title || src.url}</span>}
+              <span className="muted small">{perSource(src.id)} кадр.</span>
+              <button
+                className="icon ghost danger"
+                title="Удалить видео и его кадры"
+                onClick={() => confirm("Удалить это видео и все кадры из него?") && start(() => deleteSource(src.id, projectId))}
+              >✕</button>
+            </span>
+          ))}
+        </div>
+      )}
       <div className="board-bar no-print">
         <button className="primary" disabled={pending} onClick={() => start(() => addShot(projectId))}>+ Кадр</button>
         <button onClick={() => window.print()}>Печать / PDF</button>
         <span className="muted small grow">{shots.length} кадров{total ? ` · ~${Math.round(total)} сек` : ""}</span>
       </div>
-      {shots.length === 0 && <p className="empty">Раскадровка пустая. Добавь первый кадр.</p>}
+      {shots.length === 0 && <p className="empty">Раскадровка пустая. Вытащи кадры из видео выше или добавь кадр вручную.</p>}
       <div className="shots">
         {shots.map((s, i) => <ShotCard key={s.id} shot={s} n={i + 1} last={i === shots.length - 1} />)}
       </div>

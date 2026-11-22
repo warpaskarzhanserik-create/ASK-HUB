@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { db, type Item, type Note, type Project, type Shot } from "@/lib/db";
+import { db, type Item, type Note, type Project, type Shot, type Source } from "@/lib/db";
 import { createNote, deleteProject, updateProject } from "@/app/actions";
 import TopBar from "@/components/TopBar";
 import ServerProblem from "@/components/ServerProblem";
@@ -79,7 +79,11 @@ async function ProjectInner({ params, searchParams }: PageProps) {
         {tab === "notes" && <NotesTab projectId={id} noteId={Number(noteParam) || null} />}
 
         {tab === "board" && (
-          <Storyboard projectId={id} shots={await sql<Shot[]>`select * from shots where project_id = ${id} order by position, id`} />
+          <Storyboard
+            projectId={id}
+            shots={await sql<Shot[]>`select * from shots where project_id = ${id} order by position, id`}
+            sources={await sql<Source[]>`select * from sources where project_id = ${id} order by created_at`}
+          />
         )}
 
         {tab === "settings" && (

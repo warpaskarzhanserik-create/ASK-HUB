@@ -9,8 +9,9 @@ export function Star({ size = 18, color = "currentColor", className }: { size?: 
   );
 }
 
-/** Logo lockup: spark star in the middle of a letter triangle — S on top, A bottom-left, K bottom-right. */
-export function AskMark({ className = "", star = true }: { className?: string; star?: boolean }) {
+/** Logo: letter triangle — S on top, A bottom-left, K bottom-right. The star is never shown together with the letters
+ *  (it lives only in the intro and the favicon), so `star` stays off by default. */
+export function AskMark({ className = "", star = false }: { className?: string; star?: boolean }) {
   return (
     <span className={`askmark ${className}`} aria-label="ASK">
       {star && (
@@ -25,7 +26,7 @@ export function AskMark({ className = "", star = true }: { className?: string; s
   );
 }
 
-/** Logo: "star" = the mark alone (header, inner pages, loading, favicon); "full" = star + ASK letters (intro, home hero). */
-export function Logo({ variant = "star", size = 22, className = "" }: { variant?: "star" | "full"; size?: number; className?: string }) {
-  return variant === "full" ? <AskMark className={className} /> : <Star size={size} className={`logo-star ${className}`} />;
+/** Site logo: the ASK letter triangle only (header, loading). */
+export function Logo({ className = "" }: { className?: string }) {
+  return <AskMark className={`logo ${className}`} />;
 }
