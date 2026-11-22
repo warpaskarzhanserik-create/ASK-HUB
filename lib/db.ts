@@ -63,6 +63,17 @@ async function createSchema() {
     sound text not null default '',
     duration text not null default ''
   )`;
+  // videos that storyboard frames were pulled from
+  await sql`create table if not exists sources (
+    id serial primary key,
+    project_id int not null references projects(id) on delete cascade,
+    url text not null,
+    platform text not null default 'url',
+    title text not null default '',
+    created_at timestamptz not null default now()
+  )`;
+  await sql`alter table shots add column if not exists source_id int references sources(id) on delete set null`;
+  await sql`alter table shots add column if not exists timecode real`;
 }
 
 /** Returns a ready SQL client; creates tables on first use. */
@@ -87,4 +98,6 @@ export type Note = { id: number; project_id: number; title: string; body: string
 export type Shot = {
   id: number; project_id: number; position: number; image_url: string | null; scene: string; shot_size: string;
   description: string; camera: string; sound: string; duration: string;
+  source_id: number | null; timecode: number | null;
 };
+export type Source = { id: number; project_id: number; url: string; platform: string; title: string; created_at: Date };

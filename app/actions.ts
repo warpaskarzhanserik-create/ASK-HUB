@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { del } from "@vercel/blob";
 import { db } from "@/lib/db";
 import { preview } from "@/lib/preview";
+import { resolveVideo } from "@/lib/video-source";
 
 const str = (f: FormData, k: string) => String(f.get(k) ?? "").trim();
 const isBlob = (u: string | null) => !!u && u.includes(".blob.vercel-storage.com");
@@ -30,7 +31,7 @@ export async function updateProject(id: number, f: FormData) {
 export async function deleteProject(id: number) {
   const sql = await db();
   const items = await sql`select url from items where project_id = ${id} and source = 'upload'`;
-  const shots = await sql`select image_url from shots where project_id = ${id}`;
+  const shots = await sql`select image_url from shots where project_id = ${id}`; // includes pulled frames
   await Promise.all([...items.map((r) => removeBlob(r.url)), ...shots.map((r) => removeBlob(r.image_url))]);
   await sql`delete from projects where id = ${id}`;
   redirect("/");
@@ -135,5 +136,43 @@ export async function deleteShot(id: number, projectId: number) {
   const sql = await db();
   const [s] = await sql`delete from shots where id = ${id} returning image_url`;
   await removeBlob(s?.image_url ?? null);
+  revalidatePath(`/p/${projectId}`);
+}
+
+// ---- storyboard: frames pulled from a video link / file ----
+export async function resolveVideoLink(url: string) {
+  return resolveVideo(url);
+}
+
+export async function createSource(projectId: number, url: string, platform: string, title: string) {
+  const sql = await db();
+  const [s] = await sql`insert into sources (project_id, url, platform, title)
+    values (${projectId}, ${url.slice(0, 2000)}, ${platform}, ${title.slice(0, 300)}) returning id`;
+  return s.id as number;
+}
+
+/** Appends pulled frames to the end of the storyboard, in timecode order. */
+export async function addFrameShots(projectId: number, sourceId: number, frames: { url: string; t: number; duration: number | null }[]) {
+  if (!frames.length) return;
+  const sql = await db();
+  const [{ max }] = await sql`select coalesce(max(position), 0)::int as max from shots where project_id = ${projectId}`;
+  const rows = [...frames].sort((a, b) => a.t - b.t).map((f, i) => ({
+    project_id: projectId,
+    position: max + i + 1,
+    image_url: f.url,
+    source_id: sourceId,
+    timecode: Math.round(f.t * 100) / 100,
+    duration: f.duration ? String(Math.round(f.duration * 10) / 10) : "",
+  }));
+  await sql`insert into shots ${sql(rows)}`;
+  revalidatePath(`/p/${projectId}`);
+}
+
+/** Deletes a source video together with the storyboard frames pulled from it. */
+export async function deleteSource(id: number, projectId: number) {
+  const sql = await db();
+  const shots = await sql`delete from shots where source_id = ${id} returning image_url`;
+  await sql`delete from sources where id = ${id}`;
+  await Promise.all(shots.map((r) => removeBlob(r.image_url)));
   revalidatePath(`/p/${projectId}`);
 }
