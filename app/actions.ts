@@ -1,5 +1,6 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { del } from "@vercel/blob";
@@ -31,7 +32,12 @@ export async function deleteProject(id: number) {
   const sql = await db();
   const items = await sql`select url from items where project_id = ${id} and source = 'upload'`;
   const shots = await sql`select image_url from shots where project_id = ${id}`;
-  await Promise.all([...items.map((r) => removeBlob(r.url)), ...shots.map((r) => removeBlob(r.image_url))]);
+  const files = await sql`select url from files where project_id = ${id}`;
+  await Promise.all([
+    ...items.map((r) => removeBlob(r.url)),
+    ...shots.map((r) => removeBlob(r.image_url)),
+    ...files.map((r) => removeBlob(r.url)),
+  ]);
   await sql`delete from projects where id = ${id}`;
   redirect("/");
 }
@@ -135,5 +141,27 @@ export async function deleteShot(id: number, projectId: number) {
   const sql = await db();
   const [s] = await sql`delete from shots where id = ${id} returning image_url`;
   await removeBlob(s?.image_url ?? null);
+  revalidatePath(`/p/${projectId}`);
+}
+
+// ---- client files (PDF with a public link) ----
+export async function addClientFile(projectId: number, url: string, name: string, size: number) {
+  if (!isBlob(url)) throw new Error("Файл не из хранилища");
+  const token = randomBytes(9).toString("base64url");
+  const sql = await db();
+  await sql`insert into files (project_id, token, name, url, size) values (${projectId}, ${token}, ${name}, ${url}, ${Math.max(0, Math.round(size))})`;
+  revalidatePath(`/p/${projectId}`);
+}
+
+export async function renameClientFile(id: number, projectId: number, name: string) {
+  const sql = await db();
+  await sql`update files set name = ${name.trim() || "Документ"} where id = ${id}`;
+  revalidatePath(`/p/${projectId}`);
+}
+
+export async function deleteClientFile(id: number, projectId: number) {
+  const sql = await db();
+  const [f] = await sql`delete from files where id = ${id} returning url`;
+  await removeBlob(f?.url ?? null);
   revalidatePath(`/p/${projectId}`);
 }

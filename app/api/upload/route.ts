@@ -9,7 +9,7 @@ export async function POST(req: Request) {
       request: req,
       onBeforeGenerateToken: async () => {
         return {
-          allowedContentTypes: ["image/*", "video/*"],
+          allowedContentTypes: ["image/*", "video/*", "application/pdf"],
           maximumSizeInBytes: 500 * 1024 * 1024,
           addRandomSuffix: true,
         };

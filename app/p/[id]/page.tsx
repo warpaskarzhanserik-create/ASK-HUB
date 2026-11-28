@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { db, type Item, type Note, type Project, type Shot } from "@/lib/db";
+import { db, type ClientFile, type Item, type Note, type Project, type Shot } from "@/lib/db";
 import { createNote, deleteProject, updateProject } from "@/app/actions";
 import TopBar from "@/components/TopBar";
 import ServerProblem from "@/components/ServerProblem";
@@ -8,6 +8,7 @@ import AddRefs from "@/components/AddRefs";
 import Items from "@/components/Items";
 import NoteEditor from "@/components/NoteEditor";
 import Storyboard from "@/components/Storyboard";
+import ClientFiles from "@/components/ClientFiles";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ const TABS = [
   ["video", "Видео‑рефы"],
   ["notes", "Заметки"],
   ["board", "Раскадровка"],
+  ["files", "Файлы для клиента"],
   ["settings", "Настройки"],
 ] as const;
 
@@ -82,6 +84,10 @@ async function ProjectInner({ params, searchParams }: PageProps) {
           <Storyboard projectId={id} shots={await sql<Shot[]>`select * from shots where project_id = ${id} order by position, id`} />
         )}
 
+        {tab === "files" && (
+          <ClientFiles projectId={id} files={await sql<ClientFile[]>`select * from files where project_id = ${id} order by created_at desc`} />
+        )}
+
         {tab === "settings" && (
           <div className="stack" style={{ maxWidth: 560 }}>
             <form action={updateProject.bind(null, id)} className="card pad stack">
@@ -92,7 +98,7 @@ async function ProjectInner({ params, searchParams }: PageProps) {
             </form>
             <form action={deleteProject.bind(null, id)} className="card pad stack">
               <h2 className="danger">Удалить проект</h2>
-              <span className="muted small">Удалит все рефы, заметки, раскадровку и загруженные файлы проекта. Отменить нельзя.</span>
+              <span className="muted small">Удалит все рефы, заметки, раскадровку, PDF для клиента и загруженные файлы проекта. Клиентские ссылки перестанут работать. Отменить нельзя.</span>
               <button className="danger">Удалить навсегда</button>
             </form>
           </div>
