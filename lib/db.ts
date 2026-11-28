@@ -63,6 +63,15 @@ async function createSchema() {
     sound text not null default '',
     duration text not null default ''
   )`;
+  await sql`create table if not exists files (
+    id serial primary key,
+    project_id int not null references projects(id) on delete cascade,
+    token text not null unique,
+    name text not null,
+    url text not null,
+    size bigint not null default 0,
+    created_at timestamptz not null default now()
+  )`;
 }
 
 /** Returns a ready SQL client; creates tables on first use. */
@@ -88,3 +97,4 @@ export type Shot = {
   id: number; project_id: number; position: number; image_url: string | null; scene: string; shot_size: string;
   description: string; camera: string; sound: string; duration: string;
 };
+export type ClientFile = { id: number; project_id: number; token: string; name: string; url: string; size: string | number; created_at: Date };

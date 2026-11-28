@@ -502,3 +502,25 @@ input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 4px
   100% { opacity: 1; --rr: 140%; filter: blur(14px) brightness(1); }
 }
 .intro-light { animation-name: light-grow2; }
+
+/* =========================================================
+   CLIENT FILES — PDF with a public link
+   ========================================================= */
+.cfiles { display: grid; gap: 10px; }
+.cfile { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 12px 14px;
+  background: var(--panel); border-radius: var(--r); box-shadow: var(--shadow); animation: rise .6s var(--ease) both; animation-delay: calc(var(--i, 0) * 40ms); }
+.cfile-ico { display: grid; place-items: center; width: 44px; height: 54px; border-radius: var(--r-sm); background: var(--accent-soft);
+  color: var(--accent); font-size: 11px; font-weight: 700; letter-spacing: .08em; box-shadow: inset 0 0 0 1px rgba(42,141,255,.3); }
+.cfile-main { display: grid; gap: 2px; min-width: 0; }
+.cfile-name { font-family: var(--sans); font-size: 18px; font-weight: 300; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cfile-name:hover { color: var(--accent); }
+.cfile-acts .btn, .cfile-acts button { border-radius: 999px; }
+.page-title .btn { border-radius: 999px; }
+.pdf-view { margin-top: 20px; border-radius: var(--r-lg); overflow: hidden; background: var(--panel); box-shadow: var(--shadow); height: min(82vh, 1100px); }
+.pdf-view iframe { width: 100%; height: 100%; border: 0; background: #fff; }
+.pdf-hint { margin-top: 10px; }
+@media (max-width: 760px) {
+  .cfile { grid-template-columns: auto minmax(0, 1fr); }
+  .cfile-acts { grid-column: 1 / -1; }
+  .pdf-view { height: 70vh; }
+}
